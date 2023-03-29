@@ -53,6 +53,12 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     // TODO: implement initState
+    changleImages();
+
+    super.initState();
+  }
+
+  void changleImages() {
     List<Model> randomImages = List.generate(8, (index) {
       int image = Random().nextInt(100);
       int angle = Random().nextInt(100);
@@ -62,8 +68,6 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       images = randomImages;
     });
-
-    super.initState();
   }
 
   void dragImage(
