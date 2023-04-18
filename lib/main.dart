@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:b20fa1709/images/images.dart';
@@ -28,15 +29,6 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
   final String title;
 
   @override
@@ -45,25 +37,63 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<bool> values = List.generate(81, (index) => false);
-  List<int> xSizes = List.generate(81, (index) => (index + 1) * 41);
-  List<int> ySizes = List.generate(81, (index) => 90 + (index + 1) * 41);
+  List<int> xSizes = List.generate(81, (index) => (index + 1) * 40);
+  List<int> ySizes = List.generate(81, (index) => (index + 1) * 40);
   List<Model> images = [];
   int point = 0;
-
+  Timer? countdownTimer;
+  Duration myDuration = Duration(seconds: 20);
   @override
   void initState() {
-    // TODO: implement initState
-    changleImages();
-
+    changeImages();
+    startTimer();
     super.initState();
   }
 
-  void changleImages() {
-    List<Model> randomImages = List.generate(8, (index) {
+  void startTimer() {
+    countdownTimer =
+        Timer.periodic(Duration(seconds: 1), (_) => setCountDown());
+  }
+
+  void stopTimer() {
+    setState(() => countdownTimer!.cancel());
+  }
+
+  void setCountDown() async {
+    final reduceSecondsBy = 1;
+    setState(() {
+      final seconds = myDuration.inSeconds - reduceSecondsBy;
+      if (seconds < 0) {
+        showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+                  title: Text("Хожигдлоо"),
+                  content: Text("Оноо: $point"),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          values = List.generate(81, (index) => false);
+                          startTimer();
+                          changeImages();
+                          Navigator.pop(context);
+                          myDuration = Duration(seconds: 20);
+                        },
+                        child: Text('Тоглох'))
+                  ],
+                ));
+        countdownTimer!.cancel();
+      } else {
+        myDuration = Duration(seconds: seconds);
+      }
+    });
+  }
+
+  void changeImages() {
+    List<Model> randomImages = List.generate(1, (index) {
       int image = Random().nextInt(100);
       int angle = Random().nextInt(100);
       return Model(
-          angle: angle % 2 == 0 ? 0 : 1, image: image % 2 == 0 ? 0 : 1);
+          angle: image % 8 > 4 ? angle % 4 : angle % 2, image: image % 8);
     });
     setState(() {
       images = randomImages;
@@ -76,102 +106,156 @@ class _MyHomePageState extends State<MyHomePage> {
     int num,
   ) {
     var x = xSizes.indexWhere((cs) => cs >= dx);
-    var y = ySizes.indexWhere((cs) => cs >= dy);
-    switch (num) {
-      case 1:
-        setState(() {
-          values[y * 9 + x] = true;
-        });
-        break;
-      case 2:
-        if (!values[y * 9 + x] && !values[y * 9 + x + 9]) {
+    var y = ySizes.indexWhere((cs) => cs >= dy - 160);
+    try {
+      switch (num) {
+        case 1:
           setState(() {
             values[y * 9 + x] = true;
-            values[y * 9 + x + 9] = true;
           });
-        }
-        break;
-      case 3:
-        if (!values[y * 9 + x] && !values[y * 9 + x + 1]) {
-          setState(() {
-            values[y * 9 + x] = true;
-            values[y * 9 + x + 1] = true;
-          });
-        }
-        break;
-      case 4:
-        if (!values[y * 9 + x] &&
-            !values[y * 9 + x + 1] &&
-            !values[y * 9 + x + 9] &&
-            !values[y * 9 + x + 10])
-          setState(() {
-            values[y * 9 + x] = true;
-            values[y * 9 + x + 1] = true;
-            values[y * 9 + x + 9] = true;
-            values[y * 9 + x + 10] = true;
-          });
-        break;
-      case 5:
-        break;
-      case 6:
-        break;
-      case 7:
-        break;
-      case 8:
-        break;
-    }
-    checkPoint();
+          changeImages();
+          break;
+        case 2:
+          if (!values[y * 9 + x] && !values[y * 9 + x + 9]) {
+            setState(() {
+              values[y * 9 + x] = true;
+              values[y * 9 + x + 9] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 3:
+          if (!values[y * 9 + x] && !values[y * 9 + x + 1]) {
+            setState(() {
+              values[y * 9 + x] = true;
+              values[y * 9 + x + 1] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 4:
+          if (!values[y * 9 + x] &&
+              !values[y * 9 + x + 1] &&
+              !values[y * 9 + x + 9] &&
+              !values[y * 9 + x + 10]) {
+            setState(() {
+              values[y * 9 + x] = true;
+              values[y * 9 + x + 1] = true;
+              values[y * 9 + x + 9] = true;
+              values[y * 9 + x + 10] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 5:
+          if (!values[y * 9 + x] &&
+              !values[y * 9 + x + 1] &&
+              !values[y * 9 + x + 10] &&
+              !values[y * 9 + x + 11]) {
+            setState(() {
+              values[y * 9 + x] = true;
+              values[y * 9 + x + 1] = true;
+              values[y * 9 + x + 11] = true;
+              values[y * 9 + x + 10] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 6:
+          if (!values[y * 9 + x + 9] &&
+              !values[y * 9 + x + 1] &&
+              !values[y * 9 + x + 2] &&
+              !values[y * 9 + x + 10]) {
+            setState(() {
+              values[y * 9 + x + 9] = true;
+              values[y * 9 + x + 1] = true;
+              values[y * 9 + x + 2] = true;
+              values[y * 9 + x + 10] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 7:
+          if (!values[y * 9 + x + 9] &&
+              !values[y * 9 + x + 1] &&
+              !values[y * 9 + x + 10] &&
+              !values[y * 9 + x + 18]) {
+            setState(() {
+              values[y * 9 + x + 9] = true;
+              values[y * 9 + x + 1] = true;
+              values[y * 9 + x + 18] = true;
+              values[y * 9 + x + 10] = true;
+            });
+            changeImages();
+          }
+          break;
+        case 8:
+          if (!values[y * 9 + x] &&
+              !values[y * 9 + x + 9] &&
+              !values[y * 9 + x + 19] &&
+              !values[y * 9 + x + 10]) {
+            setState(() {
+              values[y * 9 + x] = true;
+              values[y * 9 + x + 9] = true;
+              values[y * 9 + x + 19] = true;
+              values[y * 9 + x + 10] = true;
+            });
+            changeImages();
+          }
+          break;
+      }
+      checkPoint();
+    } catch (e) {}
   }
 
   void checkPoint() {
-    int rowCount = 0, colBeforeIndex = 0, colCount = 0;
-    values.asMap().forEach((index, value) {
-      bool rowBeforeValue = true;
-      if (value) {
-        if (colBeforeIndex + 9 == index) {
-          print(index);
-          colCount++;
-          print(colCount);
-          if (colCount >= 8) {
-            setState(() {
-              point += 900;
-            });
-            for (int i = colBeforeIndex + 9; i >= 0; i -= 9) {
-              setState(() {
-                values[i] = false;
-              });
-            }
-          }
-          colBeforeIndex = index;
-        } else {
-          if (colBeforeIndex == 0 && index < 9) {
-            colBeforeIndex = index;
-          }
-        }
-      }
-      if (value) {
-        if ((index + 1) % 9 == 0 || rowBeforeValue) {
-          rowCount++;
-          if ((index + 1) % 9 == 0 && rowCount >= 9) {
-            setState(() {
-              point += 900;
-            });
-            for (int i = index; i >= index - 8; i--) {
-              setState(() {
-                values[i] = false;
-              });
-            }
-          }
-          rowBeforeValue = value;
-        }
-      } else {
-        rowCount = 0;
-      }
+    setState(() {
+      myDuration = Duration(seconds: 20);
     });
+    bool x = false, y = false;
+    for (int i = 0; i < 9; i++) {
+      x = true;
+      y = true;
+      for (int j = i * 9; j < i * 9 + 9; j++) {
+        if (values[j] && x) {
+          x = true;
+        } else {
+          x = false;
+        }
+      }
+      if (x) {
+        for (int j = i * 9; j < i * 9 + 9; j++) {
+          values[j] = false;
+          setState(() {
+            point += 100;
+          });
+        }
+      }
+      for (int j = i; j < 81; j += 9) {
+        if (values[j] && y) {
+          y = true;
+        } else {
+          y = false;
+        }
+      }
+      if (y) {
+        for (int j = i; j < 81; j += 9) {
+          values[j] = false;
+          setState(() {
+            point += 100;
+          });
+        }
+      }
+    }
+    print('x: $x');
+    print('y: $y');
   }
 
   @override
   Widget build(BuildContext context) {
+    String strDigits(int n) => n.toString().padLeft(2, '0');
+
+    final seconds = strDigits(myDuration.inSeconds.remainder(60));
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
@@ -185,14 +269,20 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Center(
+              child: Text(
+                '$seconds',
+                style: Theme.of(context).textTheme.displayMedium,
+              ),
+            ),
             DragTarget<int>(
                 onAccept: (data) => {},
                 onAcceptWithDetails: (details) {
                   dragImage(details.offset.dx, details.offset.dy, details.data);
                 },
                 builder: (context, candidateData, rejectedData) => Container(
-                      width: 370,
-                      height: 370,
+                      width: 360,
+                      height: 360,
                       child: GridView.count(
                         crossAxisCount: 9,
                         crossAxisSpacing: 5,
@@ -218,21 +308,12 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 30,
             ),
             Flexible(
-              flex: 2,
-              child: GridView.count(
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 10,
-                  crossAxisSpacing: 10,
-                  children: [
-                    ...images.map((e) {
-                      if (e.image == 0) {
-                        return RectangleImage(angle: e.angle + 2);
-                      } else {
-                        return SquareImage(angle: e.angle + 1);
-                      }
-                    })
-                  ]),
-            )
+                flex: 2,
+                child: images.first.image == 0
+                    ? RectangleImage(angle: images.first.angle + 2)
+                    : images.first.image == 1
+                        ? SquareImage(angle: images.first.angle + 1)
+                        : ZImages(angle: images.first.angle))
           ],
         ),
       ),
